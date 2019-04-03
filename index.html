@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <style>
+        .hl {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="js-sentence">123456 12 3456 1234 561 23456</div>
+    <div class="formated"></div>
+<script>
+
+function letterHighlight() {
+    function Word() {
+        this.hasHl = false;
+    }
+
+    let words = [];
+    words.push(new Word());
+
+    let counter = 0;
+
+    const sentence = Array.from(document.querySelector('.js-sentence').innerText);
+    let formated = sentence.map((letter, index) => {
+        // Checking if we are at the beginning of the new word
+        if ( sentence[index - 1] == ' ' ) words.push(new Word());
+        if ( letter !== ' ' ) counter++;
+
+        // Checking if string is not ending 1 or 2 characters on the left
+        const leftEmpty = sentence[index - 1] == ' ' || sentence[index - 2] == ' ';
+        // Checking if string is not ending 1 or 2 characters on the right
+        const rightEmpty = sentence[index + 1] == ' ' || sentence[index + 2] == ' ';
+        // Checking if we have a case with 3 characters word where our target is in the middle
+        const inMiddle = sentence[index - 1] !== ' ' && sentence[index + 1] !== ' ';
+        // Final check if our word has more than 2 characters
+        const moreThan2Char = inMiddle || (!leftEmpty || !rightEmpty);
+
+        // Checking if the current word already has highlighted character
+        const hasHl = words[words.length - 1].hasHl == true;
+        const isEmptyChar = letter !== ' ';
+        const isSixthChar = counter % 6 == 0;
+
+        if ( index > 1 && isSixthChar && isEmptyChar && moreThan2Char && !hasHl ) {
+            words[words.length - 1].hasHl = true;
+            return `<span class="hl">${letter}</span>`;
+        } else {
+            return letter;
+        }
+    }).join('');
+
+    document.querySelector('.formated').innerHTML = formated;
+}
+
+letterHighlight();
+</script>
+</body>
+</html>
