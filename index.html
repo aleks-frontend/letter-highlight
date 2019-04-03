@@ -10,11 +10,10 @@
     </style>
 </head>
 <body>
-    <div class="js-sentence">123456 12 3456 1234 561 23456</div>
-    <div class="formated"></div>
+    <div class="js-sentence">123456 12 3456 12345 6 1 23456</div>
 <script>
 
-function letterHighlight() {
+function letterHighlight(selector) {
     function Word() {
         this.hasHl = false;
     }
@@ -24,7 +23,7 @@ function letterHighlight() {
 
     let counter = 0;
 
-    const sentence = Array.from(document.querySelector('.js-sentence').innerText);
+    const sentence = Array.from(document.querySelector(selector).innerText);
     let formated = sentence.map((letter, index) => {
         // Checking if we are at the beginning of the new word
         if ( sentence[index - 1] == ' ' ) words.push(new Word());
@@ -52,10 +51,10 @@ function letterHighlight() {
         }
     }).join('');
 
-    document.querySelector('.formated').innerHTML = formated;
+    document.querySelector(selector).innerHTML = formated;
 }
 
-letterHighlight();
+letterHighlight('.js-sentence');
 </script>
 </body>
 </html>
