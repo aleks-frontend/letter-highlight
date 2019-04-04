@@ -10,31 +10,59 @@
     </style>
 </head>
 <body>
+    <div class="headingMaster">123456 12 3456 12345 6 1 23456</div>
     <div class="js-sentence">123456 12 3456 12345 6 1 23456</div>
 <script>
 
-function letterHighlight(selector) {
+function letterHighlight() {
     function Word() {
-        this.hasHl = false;
+        this.hasHl = false,
+        this.letters = []
+    }
+
+    function Letter(check) {
+        this.isLetter = check;
     }
 
     let words = [];
     words.push(new Word());
 
     let counter = 0;
+    let letters = [];
 
-    const sentence = Array.from(document.querySelector(selector).innerText);
+    let sentenceHTML = document.querySelector('.headingMaster').innerHTML;
+    sentenceHTML = sentenceHTML.replace(/<span style="text-decoration: underline;">/gi, '{');
+    sentenceHTML = sentenceHTML.replace(/<span style="text-decoration: underline;" data-mce-style="text-decoration: underline;">/gi, '{');
+    sentenceHTML = sentenceHTML.replace(/<\/span>/gi, '}');
+    sentenceHTML = sentenceHTML.replace(/&nbsp;/gi, ' ');
+    sentenceHTML = sentenceHTML.replace(/<br>/gi, '~');
+
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = sentenceHTML;
+    const sentence = Array.from(tempDiv.innerText);
+
     let formated = sentence.map((letter, index) => {
         // Checking if we are at the beginning of the new word
         if ( sentence[index - 1] == ' ' ) words.push(new Word());
-        if ( letter !== ' ' ) counter++;
+        let isLetter;
+        if ( letter !== ' ' && letter !== '~' && letter !== '{' && letter !== '}' ) {
+            isLetter = true;
+            counter++;
+        } else {
+            isLetter = false;
+        }
+
+        letters.push(new Letter(isLetter));
 
         // Checking if string is not ending 1 or 2 characters on the left
-        const leftEmpty = sentence[index - 1] == ' ' || sentence[index - 2] == ' ';
+        let leftEmpty = false;
+        let inMiddle = false;
+        if ( index > 1 ) leftEmpty = !letters[index - 1].isLetter || !letters[index - 2].isLetter;
         // Checking if string is not ending 1 or 2 characters on the right
-        const rightEmpty = sentence[index + 1] == ' ' || sentence[index + 2] == ' ';
+        const rightEmpty = sentence[index + 1] == ' ' || sentence[index + 2] == ' ' || sentence[index + 1] == '~'  || sentence[index + 2] == '~' || sentence[index + 1] == '{' || sentence[index + 2] == '{' || sentence[index + 2] == '}' || sentence[index + 1] == '}' || sentence[index + 1] == undefined || sentence[index + 2] == undefined;
         // Checking if we have a case with 3 characters word where our target is in the middle
-        const inMiddle = sentence[index - 1] !== ' ' && sentence[index + 1] !== ' ';
+        if ( index > 0 ) inMiddle = letters[index - 1].isLetter && (sentence[index + 1] !== ' ' && sentence[index + 1] !== '~' && sentence[index + 1] !== '{' && sentence[index + 1] !== '}') && sentence[index + 1] !== undefined;
+
         // Final check if our word has more than 2 characters
         const moreThan2Char = inMiddle || (!leftEmpty || !rightEmpty);
 
@@ -45,13 +73,26 @@ function letterHighlight(selector) {
 
         if ( index > 1 && isSixthChar && isEmptyChar && moreThan2Char && !hasHl ) {
             words[words.length - 1].hasHl = true;
-            return `<span class="hl">${letter}</span>`;
+            return `<strong>${letter}</strong>`;
         } else {
+            if ( !letters[index].isLetter ) {
+                switch (letter) {
+                    case '~':
+                        letter = '<br>';
+                        break;
+                    case '{':
+                        letter = '<span class="underline">';
+                        break;
+                    case '}':
+                        letter = '</span>';
+                        break;
+                }
+            }
             return letter;
         }
     }).join('');
 
-    document.querySelector(selector).innerHTML = formated;
+    document.querySelector('.js-sentence').innerHTML = formated;
 }
 
 letterHighlight('.js-sentence');
