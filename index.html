@@ -22,7 +22,7 @@
     </style>
 </head>
 <body>
-    <div class="headingMaster"><span style="text-decoration: underline;">123</span> 4<span style="text-decoration: underline;">56</span> 12 345 <span style="text-decoration: underline;">612345<br>6123456</span></div>
+    <div class="headingMaster"><span style="text-decoration: underline;">123</span> 4<span style="text-decoration: underline;">56</span> 789 12345 <span style="text-decoration: underline;">6789 12345<br>6789</span></div>
     <div class="js-sentence-output"></div>
 <script>
 
@@ -53,10 +53,11 @@ function letterHighlight() {
         this.wordIndex = wordIndex
     }
 
-    let words = [];
-
-    let letters = [];
     let characters = [];
+    let checkingSixth = false;
+    let lastHl;
+    let letters = [];
+    let words = [];
 
     words.push(new Word(0));
 
@@ -94,7 +95,18 @@ function letterHighlight() {
     });
 
     const highlighted = characters.filter((char, index) => {
-        if ( (index + 1) % 6 == 0 ) return true;
+        if ( !checkingSixth && // Checking if we are looking for sixth element
+            ( index == 2 || ( index == lastHl + 3 ) ) ) {
+            checkingSixth = true; // After this iteration we are looking 6th element
+            lastHl  = index; // Setting the current element as the last highlighted element
+            return true;
+        }
+
+        if ( checkingSixth && (index == lastHl + 6) ) { // Checking if we are on 6th element from the last highlighted one
+            checkingSixth = false;
+            lastHl = index;
+            return true;
+        }
     });
 
     letters.forEach(letter => {
