@@ -4,10 +4,6 @@
     <meta charset="UTF-8">
     <title>Document</title>
     <style>
-        strong {
-            color: red;
-        }
-
         .headingMaster {
             display: none;
         }
@@ -22,11 +18,13 @@
     </style>
 </head>
 <body>
-    <div class="headingMaster"><span style="text-decoration: underline;">123</span> 4<span style="text-decoration: underline;">56</span> 789 12345 <span style="text-decoration: underline;">6789 12345<br>6789</span></div>
+    <div class="headingMaster">
+        <span style="text-decoration: underline;">123</span> 4<span style="text-decoration: underline;">56</span> 789 12345 <span style="text-decoration: underline;">6789</span> <strong>123</strong>45<br>67<strong>89</strong>
+    </div>
     <div class="js-sentence-output"></div>
 <script>
 
-function letterHighlight() {
+function letterHighlight(source, target) {
     function Word(id) {
         this.id = id,
         this.hasHl = false,
@@ -40,6 +38,8 @@ function letterHighlight() {
                     isLineBreak = 'false',
                     isUnderlineStart = 'false', 
                     isUnderlineEnd = 'false', 
+                    isBoldStart = 'false', 
+                    isBoldEnd = 'false', 
                     isHighlighted = 'false',
                     wordIndex = null) {
         this.char = char,
@@ -49,6 +49,8 @@ function letterHighlight() {
         this.isLineBreak = isLineBreak,
         this.isUnderlineStart = isUnderlineStart,
         this.isUnderlineEnd = isUnderlineEnd,
+        this.isBoldStart = isBoldStart,
+        this.isBoldEnd = isBoldEnd,
         this.isHighlighted = isHighlighted,
         this.wordIndex = wordIndex
     }
@@ -61,30 +63,34 @@ function letterHighlight() {
 
     words.push(new Word(0));
 
-    let sentenceHTML = document.querySelector('.headingMaster').innerHTML;
+    let sentenceHTML = document.querySelector(source).innerHTML;
     sentenceHTML = sentenceHTML.replace(/<span style="text-decoration: underline;">/gi, '{');
     sentenceHTML = sentenceHTML.replace(/<span style="text-decoration: underline;" data-mce-style="text-decoration: underline;">/gi, '{');
     sentenceHTML = sentenceHTML.replace(/<\/span>/gi, '}');
     sentenceHTML = sentenceHTML.replace(/&nbsp;/gi, ' ');
     sentenceHTML = sentenceHTML.replace(/<br>/gi, '~');
+    sentenceHTML = sentenceHTML.replace(/<strong>/gi, '[');
+    sentenceHTML = sentenceHTML.replace(/<\/strong>/gi, ']');
 
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = sentenceHTML; 
     const sentence = Array.from(tempDiv.innerText);
 
     sentence.forEach((letter, index) => {
-        const isLetter = letter !== ' ' && letter !== '~' && letter !== '{' && letter !== '}';
+        const isLetter = letter !== ' ' && letter !== '~' && letter !== '{' && letter !== '}' && letter !== '[' && letter !== ']';
         const isEmptySpace = letter == ' ';
         const isLineBreak = letter == '~';
         const isUnderlineStart = letter == '{';
         const isUnderlineEnd = letter == '}';
+        const isBoldStart = letter == '[';
+        const isBoldEnd = letter == ']';
         const id = index;
 
         if ( letters.length !== 0 && (letters[index - 1].isEmptySpace || letters[index - 1].isLineBreak ) ) {
             words.push(new Word(words.length));
         }
 
-        letters.push(new Letter(letter, id, isLetter, isEmptySpace, isLineBreak, isUnderlineStart, isUnderlineEnd, false, words.length - 1));
+        letters.push(new Letter(letter, id, isLetter, isEmptySpace, isLineBreak, isUnderlineStart, isUnderlineEnd, isBoldStart, isBoldEnd, false, words.length - 1));
     });
 
     characters = letters.filter(letter => {
@@ -122,8 +128,10 @@ function letterHighlight() {
 
     const formated = letters.map(letter => {
         if ( letter.isUnderlineStart ) return '<span style="text-decoration: underline;">';
-
         if ( letter.isUnderlineEnd ) return '</span>';
+
+        if ( letter.isBoldStart ) return '<strong>';
+        if ( letter.isBoldEnd ) return '</strong>';
 
         if ( letter.isLineBreak ) return '<br>';
 
@@ -134,10 +142,10 @@ function letterHighlight() {
         }
     }).join('');
 
-    document.querySelector('.js-sentence-output').innerHTML = formated;
+    document.querySelector(target).innerHTML = formated;
 }
 
-letterHighlight('.js-sentence-output');
+letterHighlight('.headingMaster', '.js-sentence-output');
 </script>
 </body>
 </html>
