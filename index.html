@@ -15,34 +15,53 @@
         .underline {
             text-decoration: underline;
         }
+
+        /* Helper Classes */
+        .u-custom-underline {
+            position: relative;
+        }
+
+        .u-custom-underline::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 5px;
+            bottom: 0;
+            left: 0;
+            /*background: url(https://files.outfit.io/media_library_items/96014/custom-border.png);*/
+            background: tomato;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
     </style>
 </head>
 <body>
     <div class="headingMaster">
-        <span style="text-decoration: underline;">123</span> 4<span style="text-decoration: underline;">56</span> 789 12345 <span style="text-decoration: underline;">6789</span> <strong>123</strong>45<br>67<strong>89</strong>
-    </div>
+        <span style="text-decoration: underline;">123</span> 4<span style="text-decoration: underline;">56</span> 789 12345 <span style="text-decoration: underline;">6789</span> <strong>123</strong>45<br>67<strong>89</strong></div>
     <div class="js-sentence-output"></div>
 <script>
-
-function letterHighlight(source, target) {
+  function letterHighlight(source, target, autoUnderline=false) {
     function Word(id) {
-        this.id = id,
+      this.id = id,
         this.hasHl = false,
         this.letters = []
     }
 
     function Letter(char = '', 
-                    id = '', 
-                    isLetter = 'false', 
-                    isEmptySpace = 'false',
-                    isLineBreak = 'false',
-                    isUnderlineStart = 'false', 
-                    isUnderlineEnd = 'false', 
-                    isBoldStart = 'false', 
-                    isBoldEnd = 'false', 
-                    isHighlighted = 'false',
-                    wordIndex = null) {
-        this.char = char,
+                     id = '', 
+                     isLetter = 'false', 
+                     isEmptySpace = 'false',
+                     isLineBreak = 'false',
+                     isUnderlineStart = 'false', 
+                     isUnderlineEnd = 'false', 
+                     isBoldStart = 'false', 
+                     isBoldEnd = 'false', 
+                     isHighlighted = 'false',
+                     wordIndex = null,
+                     isFirstInLastWord = 'false',
+                     isLastInLastWord = 'false') {
+      this.char = char,
         this.id = id,
         this.isLetter = isLetter,
         this.isEmptySpace = isEmptySpace,
@@ -77,75 +96,108 @@ function letterHighlight(source, target) {
     const sentence = Array.from(tempDiv.innerText);
 
     sentence.forEach((letter, index) => {
-        const isLetter = letter !== ' ' && letter !== '~' && letter !== '{' && letter !== '}' && letter !== '[' && letter !== ']';
-        const isEmptySpace = letter == ' ';
-        const isLineBreak = letter == '~';
-        const isUnderlineStart = letter == '{';
-        const isUnderlineEnd = letter == '}';
-        const isBoldStart = letter == '[';
-        const isBoldEnd = letter == ']';
-        const id = index;
+      const isLetter = letter !== ' ' && letter !== '~' && letter !== '{' && letter !== '}' && letter !== '[' && letter !== ']';
+      const isEmptySpace = letter == ' ';
+      const isLineBreak = letter == '~';
+      const isUnderlineStart = letter == '{';
+      const isUnderlineEnd = letter == '}';
+      const isBoldStart = letter == '[';
+      const isBoldEnd = letter == ']';
+      const id = index;
 
-        if ( letters.length !== 0 && (letters[index - 1].isEmptySpace || letters[index - 1].isLineBreak ) ) {
-            words.push(new Word(words.length));
-        }
+      if ( letters.length !== 0 && (letters[index - 1].isEmptySpace || letters[index - 1].isLineBreak ) ) {
+        words.push(new Word(words.length));
+      }
 
-        letters.push(new Letter(letter, id, isLetter, isEmptySpace, isLineBreak, isUnderlineStart, isUnderlineEnd, isBoldStart, isBoldEnd, false, words.length - 1));
+      letters.push(new Letter(letter, id, isLetter, isEmptySpace, isLineBreak, isUnderlineStart, isUnderlineEnd, isBoldStart, isBoldEnd, false, words.length - 1));
     });
 
     characters = letters.filter(letter => {
-        if ( letter.isLetter ) {
-            words[letter.wordIndex].letters.push(letter.char);
-            return true;
-        }
+      if ( letter.isLetter ) {
+        words[letter.wordIndex].letters.push(letter.char);
+        return true;
+      }
     });
 
     const highlighted = characters.filter((char, index) => {
-        if ( !checkingSixth && // Checking if we are looking for sixth element
-            ( index == 2 || ( index == lastHl + 3 ) ) ) {
-            checkingSixth = true; // After this iteration we are looking 6th element
-            lastHl  = index; // Setting the current element as the last highlighted element
-            return true;
-        }
+      if ( !checkingSixth && // Checking if we are looking for sixth element
+          ( index == 2 || ( index == lastHl + 3 ) ) ) {
+        checkingSixth = true; // After this iteration we are looking 6th element
+        lastHl  = index; // Setting the current element as the last highlighted element
+        return true;
+      }
 
-        if ( checkingSixth && (index == lastHl + 6) ) { // Checking if we are on 6th element from the last highlighted one
-            checkingSixth = false;
-            lastHl = index;
-            return true;
-        }
+      if ( checkingSixth && (index == lastHl + 6) ) { // Checking if we are on 6th element from the last highlighted one
+        checkingSixth = false;
+        lastHl = index;
+        return true;
+      }
     });
 
     letters.forEach(letter => {
-        highlighted.forEach(hl => {
-            if ( letter.id == hl.id ) {
-                if ( !words[letter.wordIndex].hasHl && words[letter.wordIndex].letters.length > 2 ) {
-                    letter.isHighlighted = true;
-                    words[letter.wordIndex].hasHl = true;
-                }
-            }
-        })
+      highlighted.forEach(hl => {
+        if ( letter.id == hl.id ) {
+          if ( !words[letter.wordIndex].hasHl && words[letter.wordIndex].letters.length > 2 ) {
+            letter.isHighlighted = true;
+            words[letter.wordIndex].hasHl = true;
+          }
+        }
+      })
+    });
+
+    const lastWordChars = letters.filter((letter, index) => {
+      const isLastWord = letter.wordIndex == words.length - 1;
+      const isFirstChar = letters[index-1] && !letters[index-1].isLetter;
+      const isLastChar = letters[index + 1] == null;
+      
+      if (isFirstChar) {
+        letter.isFirstChar = true;
+      }
+      
+      if (isLastChar) {
+        letter.isLastChar = true;
+      }    
+
+      if ( isLastWord && ( isFirstChar || isLastChar )) {
+        return true;
+      }
+    });
+    
+    letters.forEach(letter => {
+      lastWordChars.forEach(char => {
+        if ( letter.id === char.id ) {
+          if ( char.isFirstChar ) letter.isFirstInLastWord = true;
+          if ( char.isLastChar ) letter.isLastInLastWord = true;
+        }
+      })
     });
 
     const formated = letters.map(letter => {
-        if ( letter.isUnderlineStart ) return '<span style="text-decoration: underline;">';
-        if ( letter.isUnderlineEnd ) return '</span>';
+      if ( letter.isUnderlineStart ) return '<span style="text-decoration: underline;">';
+      if ( letter.isUnderlineEnd ) return '</span>';
 
-        if ( letter.isBoldStart ) return '<strong>';
-        if ( letter.isBoldEnd ) return '</strong>';
+      if ( letter.isBoldStart ) return '<strong>';
+      if ( letter.isBoldEnd ) return '</strong>';
 
-        if ( letter.isLineBreak ) return '<br>';
+      if ( letter.isLineBreak ) return '<br>';
 
-        if ( letter.isHighlighted ) {
-            return `<em>${letter.char}</em>`;
-        } else {
-            return letter.char;
-        }
+      if ( letter.isHighlighted ) {
+        if ( letter.isFirstInLastWord && autoUnderline ) return `<span class="u-custom-underline"><em>${letter.char}</em>`;
+        if ( letter.isLastInLastWord && autoUnderline ) return `<em>${letter.char}</em></span>`;
+        
+        return `<em>${letter.char}</em>`;
+      } else {
+        if ( letter.isFirstInLastWord && autoUnderline ) return `<span class="u-custom-underline">${letter.char}`;
+        if ( letter.isLastInLastWord && autoUnderline ) return `${letter.char}</span>`;
+        
+        return letter.char;
+      }
     }).join('');
 
     document.querySelector(target).innerHTML = formated;
-}
+  }
 
-letterHighlight('.headingMaster', '.js-sentence-output');
+  letterHighlight('.headingMaster', '.js-sentence-output', true);
 </script>
 </body>
 </html>
