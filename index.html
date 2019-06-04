@@ -37,11 +37,10 @@
     </style>
 </head>
 <body>
-    <div class="headingMaster">
-        <span style="text-decoration: underline;">123</span> 4<span style="text-decoration: underline;">56</span> 789 12345 <span style="text-decoration: underline;">6789</span> <strong>123</strong>45<br>67<strong>89</strong></div>
+    <div class="headingMaster">1234<span style="text-decoration: underline;">56</span> 78912345 <span style="text-decoration: underline;">6789</span> <strong>123</strong>4567<strong>89</strong></div>
     <div class="js-sentence-output"></div>
 <script>
-  function letterHighlight(source, target, autoUnderline=false) {
+  function popColorController(source, target, autoUnderline=false, preventTwoPops=false) {
     function Word(id) {
       this.id = id,
         this.hasHl = false,
@@ -137,7 +136,11 @@
     letters.forEach(letter => {
       highlighted.forEach(hl => {
         if ( letter.id == hl.id ) {
-          if ( !words[letter.wordIndex].hasHl && words[letter.wordIndex].letters.length > 2 ) {
+          // First checking if we user is preventing the two pops per word
+          if ( preventTwoPops && words[letter.wordIndex].hasHl ) return;
+
+          // Then we are checking if the word has more than 2 letters
+          if ( words[letter.wordIndex].letters.length > 2 ) {
             letter.isHighlighted = true;
             words[letter.wordIndex].hasHl = true;
           }
@@ -197,7 +200,7 @@
     document.querySelector(target).innerHTML = formated;
   }
 
-  letterHighlight('.headingMaster', '.js-sentence-output', true);
+  popColorController('.headingMaster', '.js-sentence-output', false, false);
 </script>
 </body>
 </html>
